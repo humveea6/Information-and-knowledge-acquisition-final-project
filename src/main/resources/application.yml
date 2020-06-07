@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: g20170040
+    url: jdbc:mysql://127.0.0.1:3306/cleaned_words?characterEncoding=utf-8&useSSL=false
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+    # 控制台打印sql
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath:mappers/*xml
