@@ -23,6 +23,16 @@ public class BM25 {
     List<List<String>> docs;
 
     /**
+     * 文档全文
+     */
+    List<String> completeDocs;
+
+    /**
+     * 文档标题
+     */
+    List<String> titles;
+
+    /**
      * 文档中每个句子中的每个词与词频
      */
     Map<String, Integer>[] f;
@@ -47,8 +57,10 @@ public class BM25 {
      */
     final static float b = 0.75f;
 
-    public BM25(List<List<String>> docs) {
+    public BM25(List<List<String>> docs, List<String> completeDocs, List<String> titles) {
         this.docs = docs;
+        this.completeDocs = completeDocs;
+        this.titles = titles;
         D = docs.size();
         for (List<String> sentence : docs) {
             avgdl += sentence.size();

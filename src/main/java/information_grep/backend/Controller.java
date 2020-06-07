@@ -2,7 +2,9 @@ package information_grep.backend;
 
 import com.huaban.analysis.jieba.JiebaSegmenter;
 import information_grep.backend.utils.JsonUtils;
+import information_grep.backend.utils.WebResultUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -68,6 +70,8 @@ public class Controller {
         filesList= this.filesMapper.selectByExampleWithBLOBs(filesExample);
         System.out.println(JsonUtils.toJson(filesList));
         List<List<String>> docs = new ArrayList<>();
+        List<String> completeDocs = new ArrayList<>();
+        List<String> titles = new ArrayList<>();
 //        int i=0;
         for (Files files : filesList) {
             String cleanedWords = files.getCleanedWords();
@@ -86,9 +90,11 @@ public class Controller {
 //                }
 //            }
             docs.add(list);
+            completeDocs.add(files.getTotalWords());
+            titles.add(files.getTitle());
         }
 
-        bm25 = new BM25(docs);
+        bm25 = new BM25(docs,completeDocs,titles);
     }
 
     @PostMapping("/key")
@@ -107,14 +113,20 @@ public class Controller {
 //        List<String> testStrings = new ArrayList<>();
 //        testStrings.add("中国");
 //        testStrings.add("总统");
-        List<BM25Scores> bm25ScoresList = bm25.simAll(words);
-        System.out.println("bm25size: "+bm25ScoresList.size());
-        for(int i=0;i<10&&i<bm25ScoresList.size();i++){
-            BM25Scores bm25Scores = bm25ScoresList.get(i);
-            System.out.println(i+"th score: "+bm25Scores.getScore()+" index is :"+bm25Scores.getIndex());
+        List<BM25Scores> bm25ScoresList = bm25.simAll(words).stream().limit(20).collect(Collectors.toList());
+//        System.out.println(JsonUtils.toJson(bm25ScoresList));
+        List<ArticleVo> resList = new ArrayList<>();
+
+        for (BM25Scores bm25Scores : bm25ScoresList) {
+            Integer index = bm25Scores.getIndex();
+            ArticleVo articleVo = new ArticleVo();
+            articleVo.setDoc(bm25.completeDocs.get(index));
+            articleVo.setTitle(bm25.titles.get(index));
+            articleVo.setScore(bm25Scores.getScore());
+            resList.add(articleVo);
         }
 
-        return null;
+        return WebResultUtil.buildResult(new ResponseVo(200,"OK",resList), HttpStatus.OK);
     }
 
     public static void main(String[] args) {
