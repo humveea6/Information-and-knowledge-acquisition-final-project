@@ -10,9 +10,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author LingChen <lingchen@kuaishou.com>
@@ -27,6 +31,34 @@ public class Controller {
     private static List<Files> filesList;
 
     private static BM25 bm25;
+
+    private static Set<String> stopWords = new HashSet<>();
+
+    static {
+        File file=new File("src/main/resources/stop_words.txt");
+        BufferedReader reader=null;
+        String temp;
+        try{
+            reader=new BufferedReader(new FileReader(file));
+            while((temp=reader.readLine())!=null){
+                stopWords.add(temp);
+//                System.out.println("line"+line+":"+temp);
+            }
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        finally{
+            if(reader!=null){
+                try{
+                    reader.close();
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
     @Autowired
     private Controller(FilesMapper filesMapper1){
@@ -61,10 +93,21 @@ public class Controller {
 
     @PostMapping("/key")
     public ResponseEntity<String> search(@RequestParam String keyWord){
-        List<String> testStrings = new ArrayList<>();
-        testStrings.add("中国");
-        testStrings.add("总统");
-        List<BM25Scores> bm25ScoresList = bm25.simAll(testStrings);
+
+        JiebaSegmenter jiebaSegmenter = new JiebaSegmenter();
+        List<String> words =
+                jiebaSegmenter.process(keyWord, JiebaSegmenter.SegMode.INDEX).stream().map(segToken -> segToken.word).collect(Collectors.toList());
+        System.out.println("full size: "+words.size());
+        words.removeIf(next -> stopWords.contains(next));
+        System.out.println("remove size: "+words.size());
+        for (String word : words) {
+            System.out.println(word);
+        }
+
+//        List<String> testStrings = new ArrayList<>();
+//        testStrings.add("中国");
+//        testStrings.add("总统");
+        List<BM25Scores> bm25ScoresList = bm25.simAll(words);
         System.out.println("bm25size: "+bm25ScoresList.size());
         for(int i=0;i<10&&i<bm25ScoresList.size();i++){
             BM25Scores bm25Scores = bm25ScoresList.get(i);
@@ -75,8 +118,8 @@ public class Controller {
     }
 
     public static void main(String[] args) {
+
         String test="停用词过滤主要是自己构造停用词表文本文件，并将文本中的内容读入list，对分词后的结果逐个检查是否在停用词列表中，如果在，就过滤掉，最后得到过滤后的结果";
-        JiebaSegmenter jiebaSegmenter = new JiebaSegmenter();
-        System.out.println(jiebaSegmenter.process(test, JiebaSegmenter.SegMode.INDEX).toString());
+
     }
 }
