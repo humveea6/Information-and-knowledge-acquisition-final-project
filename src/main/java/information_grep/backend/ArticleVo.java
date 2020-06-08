@@ -1,5 +1,8 @@
 package information_grep.backend;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author LingChen <lingchen@kuaishou.com>
  * Created on 2020-06-07
@@ -11,6 +14,16 @@ public class ArticleVo {
     private String doc;
 
     private Double score;
+
+    private List<Top10WordsVo> top10Words;
+
+    public List<Top10WordsVo> getTop10Words() {
+        return top10Words;
+    }
+
+    public void setTop10Words(List<Top10WordsVo> top10Words) {
+        this.top10Words = top10Words;
+    }
 
     public String getTitle() {
         return title;
