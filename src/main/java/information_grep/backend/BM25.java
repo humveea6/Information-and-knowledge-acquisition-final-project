@@ -37,6 +37,10 @@ public class BM25 {
      */
     Map<String, Integer>[] f;
 
+    List<String> time;
+
+    List<String> URL;
+
     /**
      * 文档中全部词语与出现在几个句子中
      */
@@ -57,10 +61,12 @@ public class BM25 {
      */
     final static float b = 0.75f;
 
-    public BM25(List<List<String>> docs, List<String> completeDocs, List<String> titles) {
+    public BM25(List<List<String>> docs, List<String> completeDocs, List<String> titles,List<String> time,List<String> URL) {
         this.docs = docs;
         this.completeDocs = completeDocs;
         this.titles = titles;
+        this.time = time;
+        this.URL = URL;
         D = docs.size();
         for (List<String> sentence : docs) {
             avgdl += sentence.size();

@@ -34,7 +34,7 @@ public class Controller {
 
     private  FilesMapper filesMapper;
 
-    private static List<Files> filesList;
+    private static List<FilesWithBLOBs> filesList;
 
     private static BM25 bm25;
 
@@ -81,8 +81,10 @@ public class Controller {
         List<List<String>> docs = new ArrayList<>();
         List<String> completeDocs = new ArrayList<>();
         List<String> titles = new ArrayList<>();
+        List<String> URL = new ArrayList<>();
+        List<String> time = new ArrayList<>();
 //        int i=0;
-        for (Files files : filesList) {
+        for (FilesWithBLOBs files : filesList) {
             String cleanedWords = files.getCleanedWords();
             if(StringUtils.isEmpty(cleanedWords)){
                 System.out.println("null string!!!!");
@@ -101,9 +103,11 @@ public class Controller {
             docs.add(list);
             completeDocs.add(files.getTotalWords());
             titles.add(files.getTitle());
+            URL.add(files.getUrl());
+            time.add(files.getTime());
         }
 
-        bm25 = new BM25(docs,completeDocs,titles);
+        bm25 = new BM25(docs,completeDocs,titles,time,URL);
     }
 
     @PostMapping("/key")
@@ -139,6 +143,8 @@ public class Controller {
                     articleVo.setDoc(bm25.completeDocs.get(index));
                     articleVo.setTitle(bm25.titles.get(index));
                     articleVo.setScore(bm25Scores.getScore());
+                    articleVo.setTime(bm25.time.get(index));
+                    articleVo.setURL(bm25.URL.get(index));
 
                     Map<String, Integer> wordsCountMap = bm25.f[index];
                     Map<String,Integer> existWords = new HashMap<>();

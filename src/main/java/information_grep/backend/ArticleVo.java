@@ -15,6 +15,26 @@ public class ArticleVo {
 
     private Double score;
 
+    private String time;
+
+    private String URL;
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public String getURL() {
+        return URL;
+    }
+
+    public void setURL(String URL) {
+        this.URL = URL;
+    }
+
     private List<Top10WordsVo> top10Words;
 
     public List<Top10WordsVo> getTop10Words() {
