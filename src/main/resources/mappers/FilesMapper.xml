@@ -3,8 +3,10 @@
 <mapper namespace="information_grep.backend.FilesMapper">
   <resultMap id="BaseResultMap" type="information_grep.backend.Files">
     <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="time" jdbcType="VARCHAR" property="time" />
+    <result column="url" jdbcType="VARCHAR" property="url" />
   </resultMap>
-  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="information_grep.backend.Files">
+  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="information_grep.backend.FilesWithBLOBs">
     <result column="title" jdbcType="LONGVARCHAR" property="title" />
     <result column="cleaned_words" jdbcType="LONGVARCHAR" property="cleanedWords" />
     <result column="total_words" jdbcType="LONGVARCHAR" property="totalWords" />
@@ -68,7 +70,7 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    id
+    id, time, url
   </sql>
   <sql id="Blob_Column_List">
     title, cleaned_words, total_words
@@ -121,17 +123,25 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="information_grep.backend.Files">
-    insert into postings (id, title, cleaned_words, 
-      total_words)
-    values (#{id,jdbcType=VARCHAR}, #{title,jdbcType=LONGVARCHAR}, #{cleanedWords,jdbcType=LONGVARCHAR}, 
-      #{totalWords,jdbcType=LONGVARCHAR})
+  <insert id="insert" parameterType="information_grep.backend.FilesWithBLOBs">
+    insert into postings (id, time, url, 
+      title, cleaned_words, total_words
+      )
+    values (#{id,jdbcType=VARCHAR}, #{time,jdbcType=VARCHAR}, #{url,jdbcType=VARCHAR}, 
+      #{title,jdbcType=LONGVARCHAR}, #{cleanedWords,jdbcType=LONGVARCHAR}, #{totalWords,jdbcType=LONGVARCHAR}
+      )
   </insert>
-  <insert id="insertSelective" parameterType="information_grep.backend.Files">
+  <insert id="insertSelective" parameterType="information_grep.backend.FilesWithBLOBs">
     insert into postings
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">
         id,
+      </if>
+      <if test="time != null">
+        time,
+      </if>
+      <if test="url != null">
+        url,
       </if>
       <if test="title != null">
         title,
@@ -146,6 +156,12 @@
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id != null">
         #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="time != null">
+        #{time,jdbcType=VARCHAR},
+      </if>
+      <if test="url != null">
+        #{url,jdbcType=VARCHAR},
       </if>
       <if test="title != null">
         #{title,jdbcType=LONGVARCHAR},
@@ -170,6 +186,12 @@
       <if test="record.id != null">
         id = #{record.id,jdbcType=VARCHAR},
       </if>
+      <if test="record.time != null">
+        time = #{record.time,jdbcType=VARCHAR},
+      </if>
+      <if test="record.url != null">
+        url = #{record.url,jdbcType=VARCHAR},
+      </if>
       <if test="record.title != null">
         title = #{record.title,jdbcType=LONGVARCHAR},
       </if>
@@ -187,6 +209,8 @@
   <update id="updateByExampleWithBLOBs" parameterType="map">
     update postings
     set id = #{record.id,jdbcType=VARCHAR},
+      time = #{record.time,jdbcType=VARCHAR},
+      url = #{record.url,jdbcType=VARCHAR},
       title = #{record.title,jdbcType=LONGVARCHAR},
       cleaned_words = #{record.cleanedWords,jdbcType=LONGVARCHAR},
       total_words = #{record.totalWords,jdbcType=LONGVARCHAR}
@@ -196,14 +220,22 @@
   </update>
   <update id="updateByExample" parameterType="map">
     update postings
-    set id = #{record.id,jdbcType=VARCHAR}
+    set id = #{record.id,jdbcType=VARCHAR},
+      time = #{record.time,jdbcType=VARCHAR},
+      url = #{record.url,jdbcType=VARCHAR}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
   </update>
-  <update id="updateByPrimaryKeySelective" parameterType="information_grep.backend.Files">
+  <update id="updateByPrimaryKeySelective" parameterType="information_grep.backend.FilesWithBLOBs">
     update postings
     <set>
+      <if test="time != null">
+        time = #{time,jdbcType=VARCHAR},
+      </if>
+      <if test="url != null">
+        url = #{url,jdbcType=VARCHAR},
+      </if>
       <if test="title != null">
         title = #{title,jdbcType=LONGVARCHAR},
       </if>
@@ -216,11 +248,19 @@
     </set>
     where id = #{id,jdbcType=VARCHAR}
   </update>
-  <update id="updateByPrimaryKeyWithBLOBs" parameterType="information_grep.backend.Files">
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="information_grep.backend.FilesWithBLOBs">
     update postings
-    set title = #{title,jdbcType=LONGVARCHAR},
+    set time = #{time,jdbcType=VARCHAR},
+      url = #{url,jdbcType=VARCHAR},
+      title = #{title,jdbcType=LONGVARCHAR},
       cleaned_words = #{cleanedWords,jdbcType=LONGVARCHAR},
       total_words = #{totalWords,jdbcType=LONGVARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="information_grep.backend.Files">
+    update postings
+    set time = #{time,jdbcType=VARCHAR},
+      url = #{url,jdbcType=VARCHAR}
     where id = #{id,jdbcType=VARCHAR}
   </update>
 </mapper>
