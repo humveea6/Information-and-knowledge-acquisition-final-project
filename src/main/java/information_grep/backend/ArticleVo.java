@@ -19,6 +19,16 @@ public class ArticleVo {
 
     private String URL;
 
+    private InformationExtractionVo informationExtractionVo;
+
+    public InformationExtractionVo getInformationExtractionVo() {
+        return informationExtractionVo;
+    }
+
+    public void setInformationExtractionVo(InformationExtractionVo informationExtractionVo) {
+        this.informationExtractionVo = informationExtractionVo;
+    }
+
     public String getTime() {
         return time;
     }

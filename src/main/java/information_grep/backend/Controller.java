@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StopWatch;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,8 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
@@ -188,6 +188,7 @@ public class Controller {
         }
 
         countDownLatch.await(3000,TimeUnit.MILLISECONDS);
+
         Collections.sort(resList, new Comparator<ArticleVo>() {
             @Override
             public int compare(ArticleVo o1, ArticleVo o2) {
@@ -203,12 +204,52 @@ public class Controller {
             }
         });
 
+        //信息抽取
+        List<String> params = new ArrayList<>();
+        params.add("python3");
+        params.add("/Users/humveea6/Downloads/info_extractor.py");
+        for (ArticleVo articleVo : resList) {
+            params.add(articleVo.getDoc());
+        }
+
+        List<InformationExtractionVo> information = Arrays.stream(getInformation(params.toArray(new String[params.size()]))).collect(Collectors.toList());
+
+        for(int i=0;i<information.size();i++){
+            InformationExtractionVo informationExtractionVo = information.get(i);
+            ArticleVo articleVo = resList.get(i);
+            articleVo.setInformationExtractionVo(informationExtractionVo);
+            resList.set(i,articleVo);
+        }
+
         return WebResultUtil.buildResult(new ResponseVo(200,"OK",resList), HttpStatus.OK);
     }
 
-    public static void main(String[] args) {
+    private InformationExtractionVo[] getInformation(String[] docs){
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        InformationExtractionVo[] informationExtractionVoList = new InformationExtractionVo[20];
+        try {
+            Process process = Runtime.getRuntime().exec(docs);
+            System.out.println(process.waitFor());
+            BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line = null;
+            while ((line = in.readLine()) != null) {
+                log.info("getInformation: "+line);
+                informationExtractionVoList = JsonUtils.fromJson(line,InformationExtractionVo[].class);
+            }
+            in.close();
+            int re = process.waitFor();
+            System.out.println(re);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        stopWatch.stop();
+        log.info("This task cost: {}  {}",Thread.currentThread().getName(),stopWatch.getTotalTimeSeconds());
 
-        String test="停用词过滤主要是自己构造停用词表文本文件，并将文本中的内容读入list，对分词后的结果逐个检查是否在停用词列表中，如果在，就过滤掉，最后得到过滤后的结果";
+        return informationExtractionVoList;
+    }
+
+    public static void main(String[] args) {
 
     }
 }
